@@ -1,6 +1,7 @@
 use adblock::blocker::Redirection;
 use adblock::engine::Engine;
 use adblock::lists::FilterListMetadata;
+use adblock::lists::FilterSet;
 use adblock::resources::{MimeType, Resource, ResourceType};
 use core::ptr;
 use libc::size_t;
@@ -372,4 +373,39 @@ pub unsafe extern "C" fn engine_hidden_class_id_selectors(
     CString::new(serde_json::to_string(&stylesheet).unwrap_or_else(|_| "".into()))
         .expect("Error: CString::new()")
         .into_raw()
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn engine_from_filter_set(filter_set: *mut FilterSet, optimize: bool) -> *mut Engine {
+    assert!(!filter_set.is_null());
+    let filter_set = Box::leak(Box::from_raw(filter_set));
+
+    let engine = adblock::engine::Engine::from_filter_set(filter_set.clone(), optimize);
+    Box::into_raw(Box::new(engine))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn filterset_new() -> *mut FilterSet {
+    let filter_set = adblock::lists::FilterSet::new(false);
+    Box::into_raw(Box::new(filter_set))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn filterset_destroy(filter_set: *mut FilterSet) {
+    if !filter_set.is_null() {
+        drop(Box::from_raw(filter_set));
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn filterset_add_filter_list(filter_set: *mut FilterSet, filter_list: *const c_char) {
+    let filter_list = CStr::from_ptr(filter_list).to_str().unwrap();
+    assert!(!filter_set.is_null());
+    let filter_set = Box::leak(Box::from_raw(filter_set));
+    filter_set.add_filter_list(filter_list, adblock::lists::ParseOptions{
+        format: adblock::lists::FilterFormat::Standard,
+        include_redirect_urls: true,
+        rule_types: adblock::lists::RuleTypes::NetworkOnly
+    });
 }

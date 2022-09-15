@@ -207,4 +207,22 @@ Engine::~Engine() {
   engine_destroy(raw);
 }
 
+Engine Engine::fromFilterSet(FilterSet *set, bool optimize) {
+  C_Engine *cengine = engine_from_filter_set(set->raw, optimize);
+  return Engine(cengine);
+}
+
+
+FilterSet::FilterSet() {
+  raw = filterset_new();
+}
+
+FilterSet::~FilterSet() {
+  filterset_destroy(raw);
+}
+
+void FilterSet::addFilterList(const std::string &filter_list) {
+  filterset_add_filter_list(raw, filter_list.data());
+}
+
 }  // namespace adblock

@@ -79,8 +79,26 @@ typedef ADBLOCK_EXPORT struct FilterListMetadata {
   FilterListMetadata(const FilterListMetadata&) = delete;
 } FilterListMetadata;
 
+
+class ADBLOCK_EXPORT FilterSet {
+  friend class Engine;
+ public:
+  FilterSet();
+  ~FilterSet();
+
+  FilterSet(FilterSet &&) = default;
+
+  void addFilterList(const std::string &filter_list);
+
+ private:
+  FilterSet(const FilterSet &) = delete;
+  void operator=(const FilterSet&) = delete;
+  C_FilterSet* raw = nullptr;
+};
+
 class ADBLOCK_EXPORT Engine {
  public:
+  static Engine fromFilterSet(FilterSet *set, bool optimize);
   Engine();
   explicit Engine(C_Engine* c_engine);
   explicit Engine(const std::string& rules);

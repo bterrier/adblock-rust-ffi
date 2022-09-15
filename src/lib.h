@@ -23,6 +23,15 @@ typedef struct C_Engine C_Engine;
 typedef struct C_FilterListMetadata C_FilterListMetadata;
 
 /**
+ * Manages a set of rules to be added to an `Engine`.
+ *
+ * To be able to efficiently handle special options like `$badfilter`, and to allow optimizations,
+ * all rules must be available when the `Engine` is first created. `FilterSet` allows assembling a
+ * compound list from multiple different sources before compiling the rules into an `Engine`.
+ */
+typedef struct C_FilterSet C_FilterSet;
+
+/**
  * An external callback that receives a hostname and two out-parameters for start and end
  * position. The callback should fill the start and end positions with the start and end indices
  * of the domain part of the hostname.
@@ -175,5 +184,15 @@ char *engine_hidden_class_id_selectors(struct C_Engine *engine,
                                        size_t ids_size,
                                        const char *const *exceptions,
                                        size_t exceptions_size);
+
+struct C_Engine *engine_from_filter_set(struct C_FilterSet *filter_set,
+                                        bool optimize);
+
+struct C_FilterSet *filterset_new(void);
+
+void filterset_destroy(struct C_FilterSet *filter_set);
+
+void filterset_add_filter_list(struct C_FilterSet *filter_set,
+                               const char *filter_list);
 
 #endif /* ADBLOCK_RUST_FFI_H */

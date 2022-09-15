@@ -389,6 +389,29 @@ void TestGenerichide() {
   assert(a_path_resources == a_path_result);
 }
 
+void TestFilterSet()
+{
+  FilterSet set;
+  set.addFilterList("-advertisement-icon$important\n"
+                "@@-advertisement-icon-good\n");
+  set.addFilterList("-ad-icon$third-party");
+
+  Engine engine{Engine::fromFilterSet(&set, true)};
+  Check(true, false, true, "", "Exactly matching important rule from 1st list", engine,
+        "http://example.com/-advertisement-icon", "example.com", "example.com",
+        false, "image");
+  Check(true, false, true, "", "Matching exception rule and important rule from 1st list", engine,
+        "http://example.com/-advertisement-icon-good", "example.com", "example.com",
+        false, "image");     
+  Check(true, false, false, "", "Without needed tags from 2nd list", engine,
+      "http://example.com/-ad-icon", "example.com", "brianbondy.com",
+      true, "image");
+  Check(false, false, false, "", "Without needed tags from 2nd list", engine,
+      "http://example.com/-ad-icon", "example.com", "example.com",
+      false, "image");
+
+      Engine engine2 = std::move(engine);
+}
 
 void TestMove()
 {
@@ -453,6 +476,7 @@ int main() {
   TestGenerichide();
   TestCosmeticScriptletResources();
   TestMove();
+  TestFilterSet();
   cout << num_passed << " passed, " <<
       num_failed << " failed" << endl;
   cout << "Success!";
