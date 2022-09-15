@@ -86,6 +86,18 @@ Engine::Engine(C_Engine* c_engine) : raw(c_engine) {}
 
 Engine::Engine() : raw(engine_create("")) {}
 
+Engine::Engine(Engine &&other) : raw(other.raw) {
+  other.raw = nullptr;
+}
+
+void Engine::operator=(Engine &&other) {
+  if (raw != nullptr) {
+    engine_destroy(raw);
+  }
+  raw = other.raw;
+  other.raw = nullptr;
+}
+
 Engine::Engine(const std::string& rules) : raw(engine_create(rules.c_str())) {}
 
 Engine::Engine(const char* data, size_t data_size)

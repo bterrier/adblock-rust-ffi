@@ -114,7 +114,8 @@ class ADBLOCK_EXPORT Engine {
       const std::vector<std::string>& exceptions);
   ~Engine();
 
-  Engine(Engine&&) = default;
+  Engine(Engine&&);
+  void operator=(Engine&&);
 
  private:
   Engine(const Engine&) = delete;

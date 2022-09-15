@@ -389,6 +389,36 @@ void TestGenerichide() {
   assert(a_path_resources == a_path_result);
 }
 
+
+void TestMove()
+{
+  Engine engine("-advertisement-icon$important\n"
+                "@@-advertisement-icon-good\n");
+  Check(true, false, true, "", "Exactly matching important rule", engine,
+        "http://example.com/-advertisement-icon", "example.com", "example.com",
+        false, "image");
+  Check(true, false, true, "", "Matching exception rule and important rule", engine,
+        "http://example.com/-advertisement-icon-good", "example.com", "example.com",
+        false, "image");     
+
+
+  Engine engine2 = std::move(engine);
+  Check(true, false, true, "", "Exactly matching important rule after move", engine2,
+        "http://example.com/-advertisement-icon", "example.com", "example.com",
+        false, "image");
+  Check(true, false, true, "", "Matching exception rule and important rule after move", engine2,
+        "http://example.com/-advertisement-icon-good", "example.com", "example.com",
+        false, "image");
+
+  engine = std::move(engine2);
+  Check(true, false, true, "", "Exactly matching important rule after move", engine,
+        "http://example.com/-advertisement-icon", "example.com", "example.com",
+        false, "image");
+  Check(true, false, true, "", "Matching exception rule and important rule after move", engine,
+        "http://example.com/-advertisement-icon-good", "example.com", "example.com",
+        false, "image");
+}
+
 // Naive domain resolution implementation. Assumes the hostname == the domain,
 // other than the few explicitly listed exceptional cases.
 void domainResolverImpl(const char* host, uint32_t* start, uint32_t* end) {
@@ -422,6 +452,7 @@ int main() {
   TestSubdomainUrlCosmetics();
   TestGenerichide();
   TestCosmeticScriptletResources();
+  TestMove();
   cout << num_passed << " passed, " <<
       num_failed << " failed" << endl;
   cout << "Success!";
